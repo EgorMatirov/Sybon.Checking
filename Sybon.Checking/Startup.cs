@@ -116,9 +116,10 @@ namespace Sybon.Checking
             });
             app.UseMvc();
 
-            app.ApplicationServices
-                .GetService<ISubmitCallbackService>()
-                .Listen(GetBunsanConnectionParameters(SecurityConfiguration.BunsanBroker));
+            if(SecurityConfiguration.BunsanBroker.Enabled)
+                app.ApplicationServices
+                    .GetService<ISubmitCallbackService>()
+                    .Listen(GetBunsanConnectionParameters(SecurityConfiguration.BunsanBroker));
         }
         
         private static IMapper CreateMapper(IServiceProvider serviceProvider)

@@ -81,7 +81,8 @@ namespace Sybon.Checking
         }
 
         private IConfiguration Configuration { get; }
-        
+
+        public bool Enabled => Configuration.GetValue<bool>("Enabled");
         public string WorkerName => Configuration.GetValue<string>("WorkerName");
         public string WorkerResourceName => Configuration.GetValue<string>("WorkerResourceName");
         public string Host => Configuration.GetValue<string>("Host");
