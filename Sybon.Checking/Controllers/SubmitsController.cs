@@ -75,32 +75,30 @@ namespace Sybon.Checking.Controllers
             return Ok(submitIds);
         }
 
-//        [HttpPost("rejudge")]
-//        [SwaggerOperation("Rejudge")]
-//        [SwaggerOperationFilter(typeof(SwaggerApiKeySecurityFilter))]
-//        [AuthorizeFilter]
-//        public IActionResult Rejudge([FromBody] long[] ids)
-//        {
-//            var token = ConfigManager.Configuration["sybon:auth:sysuser:token"];
-//            var permissionsApi =
-//                new PermissionsApi(new Configuration(apiKey: new Dictionary<string, string>() { { "api_key", token } }));
-//            var limitExceeded = !permissionsApi.TryIncreaseRequestsCountBy(UserId, ids.Length);
-//            if (limitExceeded == null || limitExceeded.Value) return new HttpStatusCodeResult(RequestsLimitExceededStatusCode);
-//            bool authorized = ids.All(x =>
-//            {
-//                var submit = ServiceUoW.SubmitService.Get(x);
-//                var permission = permissionsApi.GetToProblem(UserId, submit.ProblemId);
-//                return permission.Contains("Read");
-//            });
-//            if (!authorized)
-//                return new HttpStatusCodeResult((int) HttpStatusCode.Unauthorized);
-//            foreach (var id in ids)
-//            {
-//                ServiceUoW.SubmitService.Rejudge(id);
-//            }
-//            return Ok();
-//        }
-//
+        [HttpPost("rejudge")]
+        [SwaggerOperation("Rejudge")]
+        [SwaggerOperationFilter(typeof(SwaggerApiKeySecurityFilter))]
+        [AuthorizeFilter]
+        public async Task<IActionResult> Rejudge(
+            [FromServices] IPermissionsApi permissionsApi,
+            [FromServices] ISubmitService submitService,
+            [FromServices] IMapper mapper,
+            [FromBody] long[] ids)
+        {
+            var limitExceeded = !permissionsApi.TryIncreaseRequestsCountBy(UserId, ids.Length);
+            if(limitExceeded == null || limitExceeded.Value) return new StatusCodeResult(RequestsLimitExceededStatusCode);
+            
+            var submits = await Task.WhenAll(ids.Select(submitService.GetAsync));
+            if (!submits.All(submit => permissionsApi.GetToProblem(UserId, submit.ProblemId).Contains("Read")))
+                return new StatusCodeResult((int)HttpStatusCode.Unauthorized);
+            
+            foreach (var id in ids)
+            {
+                await submitService.RejudgeAsync(id);
+            }
+            return Ok();
+        }
+
         [HttpGet("results")]
         [SwaggerOperation("GetSubmitResults")]
         [SwaggerResponse((int)HttpStatusCode.OK, Type = typeof(ICollection<SubmitResult>))]

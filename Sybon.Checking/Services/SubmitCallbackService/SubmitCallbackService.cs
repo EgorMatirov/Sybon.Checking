@@ -17,6 +17,7 @@ namespace Sybon.Checking.Services.SubmitCallbackService
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private ClientListener _clientListener;
+        private readonly object lockObj = new object();
 
         public SubmitCallbackService(IServiceScopeFactory serviceScopeFactory)
         {
@@ -54,43 +55,46 @@ namespace Sybon.Checking.Services.SubmitCallbackService
             _clientListener?.Dispose();
         }
 
-        private async void GetFinalResult(string submitIdStr, byte[] submitResultBytes)
+        private void GetFinalResult(string submitIdStr, byte[] submitResultBytes)
         {
-            var submitResultId = long.Parse(submitIdStr);
-            // Logger.Log.InfoFormat("GetFinalResult for submitResult {0}", submitResultId);
-            var result = Bacs.Problem.Single.Result.Parser.ParseFrom(submitResultBytes);
-            using (var scope = _serviceScopeFactory.CreateScope())
+            lock (lockObj)
             {
-                var repositoryUnitOfWork = scope.ServiceProvider.GetRequiredService<IRepositoryUnitOfWork>();
-            
-                var submitResult = await repositoryUnitOfWork.GetRepository<ISubmitResultRepository>().FindAsync(submitResultId);
-            
-                submitResult.BuildResult = new Repositories.SubmitResultRepository.BuildResult
+                var submitResultId = long.Parse(submitIdStr);
+                // Logger.Log.InfoFormat("GetFinalResult for submitResult {0}", submitResultId);
+                var result = Bacs.Problem.Single.Result.Parser.ParseFrom(submitResultBytes);
+                using (var scope = _serviceScopeFactory.CreateScope())
                 {
-                    Output = result.Build.Output.ToByteArray(),
-                    Status = (Repositories.SubmitResultRepository.BuildResult.BuildStatus)(int)result.Build.Status
-                };
-
-                submitResult.TestResults = result.TestGroup?.Select(tgr => new Repositories.SubmitResultRepository.TestGroupResult
-                {
-                    InternalId = tgr.Id,
-                    Executed = tgr.Executed,
-                    TestResults = tgr.Test?.Select(tr => new Repositories.SubmitResultRepository.TestResult
+                    var repositoryUnitOfWork = scope.ServiceProvider.GetRequiredService<IRepositoryUnitOfWork>();
+                
+                    var submitResult = repositoryUnitOfWork.GetRepository<ISubmitResultRepository>().FindAsync(submitResultId).Result;
+                
+                    submitResult.BuildResult = new Repositories.SubmitResultRepository.BuildResult
                     {
-                        Status = GetStatus(tr),
-                        JudgeMessage = tr.Judge?.Message,
-                        Input = tr.File.FirstOrDefault(f => f.Id == "stdin")?.Data.ToStringUtf8(),
-                        ActualResult = tr.File.FirstOrDefault(f => f.Id == "stdout")?.Data.ToStringUtf8(),
-                        ExpectedResult = tr.File.FirstOrDefault(f => f.Id == "hint")?.Data.ToStringUtf8(),
-                        ResourceUsage =  tr.Execution == null ? null : new Repositories.SubmitResultRepository.ResourceUsage
+                        Output = result.Build.Output.ToByteArray(),
+                        Status = (Repositories.SubmitResultRepository.BuildResult.BuildStatus)(int)result.Build.Status
+                    };
+    
+                    submitResult.TestResults = result.TestGroup?.Select(tgr => new Repositories.SubmitResultRepository.TestGroupResult
+                    {
+                        InternalId = tgr.Id,
+                        Executed = tgr.Executed,
+                        TestResults = tgr.Test?.Select(tr => new Repositories.SubmitResultRepository.TestResult
                         {
-                            TimeUsageMillis = (long) tr.Execution.ResourceUsage.TimeUsageMillis,
-                            MemoryUsageBytes = (long) tr.Execution.ResourceUsage.MemoryUsageBytes
-                        }
-                    }).ToList()
-                }).ToList();
-
-                await repositoryUnitOfWork.SaveChangesAsync();
+                            Status = GetStatus(tr),
+                            JudgeMessage = tr.Judge?.Message,
+                            Input = tr.File.FirstOrDefault(f => f.Id == "stdin")?.Data.ToStringUtf8(),
+                            ActualResult = tr.File.FirstOrDefault(f => f.Id == "stdout")?.Data.ToStringUtf8(),
+                            ExpectedResult = tr.File.FirstOrDefault(f => f.Id == "hint")?.Data.ToStringUtf8(),
+                            ResourceUsage =  tr.Execution == null ? null : new Repositories.SubmitResultRepository.ResourceUsage
+                            {
+                                TimeUsageMillis = (long) tr.Execution.ResourceUsage.TimeUsageMillis,
+                                MemoryUsageBytes = (long) tr.Execution.ResourceUsage.MemoryUsageBytes
+                            }
+                        }).ToList()
+                    }).ToList();
+    
+                    repositoryUnitOfWork.SaveChangesAsync().Wait();
+                }
             }
         }
         

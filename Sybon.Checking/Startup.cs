@@ -156,7 +156,9 @@ namespace Sybon.Checking
                         Data = src.Solution
                     }));
 
-                config.CreateMap<Repositories.SubmitsRepository.Submit, Submit>();
+                config.CreateMap<Repositories.SubmitsRepository.Submit, Submit>()
+                    .ForMember(x => x.Solution, opt => opt.MapFrom(src => src.Solution.Data))
+                    .ForMember(x => x.SolutionFileType, opt => opt.MapFrom(src => src.Solution.FileType));
                 config.CreateMap<SubmitResult, Services.SubmitResultService.Models.SubmitResult>();
                 config.CreateMap<BuildResult, Services.SubmitResultService.Models.BuildResult>();
                 config.CreateMap<TestGroupResult, Services.SubmitResultService.Models.TestGroupResult>();

@@ -21,6 +21,7 @@ namespace Sybon.Checking.Repositories.SubmitsRepository
                 .ThenInclude(x => x.TestResults)
                 .ThenInclude(x => x.TestResults)
                 .ThenInclude(x => x.ResourceUsage)
+                .Include(x => x.Solution)
                 .FirstOrDefaultAsync(x => x.Id == key);
         }
     }
