@@ -104,26 +104,17 @@ namespace Sybon.Checking.Controllers
         [SwaggerResponse((int)HttpStatusCode.OK, Type = typeof(ICollection<SubmitResult>))]
         [SwaggerOperationFilter(typeof(SwaggerApiKeySecurityFilter))]
         [AuthorizeFilter]
-        public IActionResult GetSubmitResults(
-            [FromServices] ISubmitResultService submitResultService,
+        public async Task<IActionResult> GetSubmitResults(
+            [FromServices] IPermissionsApi permissionsApi,
             [FromServices] ISubmitService submitService,
             [FromQuery] string ids)
         {
-            var idList = ids.Split(",");
-            //TODO: check auth
-//            var permissionsApi = new PermissionsApi(new Configuration(apiKey: ApiKeyDict));
-//
-//            bool authorized = idList.All(x =>
-//            {
-//                var submit = ServiceUoW.SubmitService.Get(x);
-//                var permission = permissionsApi.GetToProblem(UserId, submit.ProblemId);
-//                return permission.Contains("Read");
-//            });
-//            if (!authorized)
-//                return new HttpStatusCodeResult((int)HttpStatusCode.Unauthorized);
-
+            var idList = ids.Split(",").Select(long.Parse).ToArray();
+            var submits = await Task.WhenAll(idList.Select(submitService.GetAsync));
+            if (!submits.All(submit => permissionsApi.GetToProblem(UserId, submit.ProblemId).Contains("Read")))
+                return new StatusCodeResult((int)HttpStatusCode.Unauthorized);
+            
             var result = idList
-                .Select(int.Parse)
                 .Select(async x => await submitService.GetAsync(x))
                 .Select(x => x.Result.Result)
                 .ToArray();
