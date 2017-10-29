@@ -82,7 +82,6 @@ namespace Sybon.Checking.Controllers
         public async Task<IActionResult> Rejudge(
             [FromServices] IPermissionsApi permissionsApi,
             [FromServices] ISubmitService submitService,
-            [FromServices] IMapper mapper,
             [FromBody] long[] ids)
         {
             var limitExceeded = !permissionsApi.TryIncreaseRequestsCountBy(UserId, ids.Length);
