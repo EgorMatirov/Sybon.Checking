@@ -4,6 +4,7 @@ using System.Text;
 using Bacs.Problem.Single;
 using Bacs.Process;
 using Bunsan.Broker;
+using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Sybon.Checking.Repositories.SubmitResultRepository;
 using Sybon.Common;
@@ -11,16 +12,15 @@ using Result = Bunsan.Broker.Result;
 
 namespace Sybon.Checking.Services.SubmitCallbackService
 {
+    [UsedImplicitly]
     public class SubmitCallbackService : ISubmitCallbackService
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly IServiceProvider _serviceProvider;
         private ClientListener _clientListener;
 
-        public SubmitCallbackService(IServiceProvider serviceProvider, IServiceScopeFactory serviceScopeFactory)
+        public SubmitCallbackService(IServiceScopeFactory serviceScopeFactory)
         {
             _serviceScopeFactory = serviceScopeFactory;
-            _serviceProvider = serviceProvider;
         }
 
         public SubmitCallbackService Listen(ConnectionParameters connectionParameters)
