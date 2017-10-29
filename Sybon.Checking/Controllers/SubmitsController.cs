@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Sybon.Auth.Client.Api;
@@ -26,14 +27,16 @@ namespace Sybon.Checking.Controllers
         public async Task<IActionResult> Send(
             [FromServices] IPermissionsApi permissionsApi,
             [FromServices] ISubmitService submitService,
-            [FromBody] Submit submit)
+            [FromServices] IMapper mapper,
+            [FromBody] SubmitModel submitModel)
         {
             var limitExceeded = !permissionsApi.TryIncreaseRequestsCountBy(UserId, 1);
             if(limitExceeded == null || limitExceeded.Value) return new StatusCodeResult(RequestsLimitExceededStatusCode);
 
-            var permission = permissionsApi.GetToProblem(UserId, submit.ProblemId);
+            var permission = permissionsApi.GetToProblem(UserId, submitModel.ProblemId);
             if (!permission.Contains("Read"))
                 return new StatusCodeResult((int)HttpStatusCode.Unauthorized);
+            var submit = mapper.Map<Submit>(submitModel);
             submit.Created = DateTime.UtcNow;
             submit.UserId = UserId;
             var submitId = await submitService.SendAsync(submit);
@@ -98,7 +101,10 @@ namespace Sybon.Checking.Controllers
         [SwaggerResponse((int)HttpStatusCode.OK, Type = typeof(ICollection<SubmitResult>))]
         [SwaggerOperationFilter(typeof(SwaggerApiKeySecurityFilter))]
         [AuthorizeFilter]
-        public IActionResult GetSubmitResults([FromServices] ISubmitResultService submitResultService, [FromServices] ISubmitService submitService, [FromQuery] string ids)
+        public IActionResult GetSubmitResults(
+            [FromServices] ISubmitResultService submitResultService,
+            [FromServices] ISubmitService submitService,
+            [FromQuery] string ids)
         {
             var idList = ids.Split(",");
             //TODO: check auth
@@ -121,8 +127,16 @@ namespace Sybon.Checking.Controllers
             return Ok(result);
         }
         
+        public class SubmitModel
+        {
+            public long CompilerId { get; set; }
+            public byte[] Solution { get; set; }
+            public SolutionFileType SolutionFileType { get; set; }
+            public long ProblemId { get; set; }
+            public bool PretestsOnly { get; set; }
+        }
+        
         public long UserId { get; set; }
-
         public string ApiKey { get; set; }
     }
 }

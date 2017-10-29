@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.AspNetCore.Swagger;
 using Sybon.Archive.Client.Api;
+using Sybon.Checking.Controllers;
 using Sybon.Checking.Repositories.CompilersRepository;
 using Sybon.Checking.Repositories.SubmitResultRepository;
 using Sybon.Checking.Repositories.SubmitsRepository;
@@ -161,6 +162,7 @@ namespace Sybon.Checking
                 config.CreateMap<TestGroupResult, Services.SubmitResultService.Models.TestGroupResult>();
                 config.CreateMap<TestResult, Services.SubmitResultService.Models.TestResult>();
                 config.CreateMap<ResourceUsage, Services.SubmitResultService.Models.ResourceUsage>();
+                config.CreateMap<SubmitsController.SubmitModel, Submit>();
             });
             return Mapper.Instance;
         }
