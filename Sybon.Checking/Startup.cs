@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Swagger;
 using Sybon.Archive.Client.Api;
 using Sybon.Checking.Controllers;
@@ -69,7 +70,7 @@ namespace Sybon.Checking
             {
                 options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
                 options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
-            });;
+            });
             
             services.AddSwaggerGen(c =>
             {
@@ -108,24 +109,6 @@ namespace Sybon.Checking
         [UsedImplicitly]
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            // TODO: Move to Sybon.Common
-            // TODO: Filter exceptions and do not log system exceptions (db problems \ etc)
-            app.UseExceptionHandler(
-                builder =>
-                {
-                    builder.Run(
-                        async context =>
-                        {
-                            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                            context.Response.ContentType = "text/html";
-
-                            var error = context.Features.Get<IExceptionHandlerFeature>();
-                            if (error != null)
-                            {
-                                await context.Response.WriteAsync($"{{\"error\": \"{error.Error.Message}\"}}").ConfigureAwait(false);
-                            }{}
-                        });
-                });
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
