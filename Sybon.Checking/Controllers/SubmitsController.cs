@@ -43,33 +43,38 @@ namespace Sybon.Checking.Controllers
             return Ok(submitId);
         }
 
-//        [HttpPost("sendall")]
-//        [SwaggerOperation("SendAll")]
-//        [SwaggerResponse(HttpStatusCode.OK, Type = typeof(ICollection<long>))]
-//        [SwaggerOperationFilter(typeof(SwaggerApiKeySecurityFilter))]
-//        [AuthorizeFilter]
-//        public async Task<IActionResult> SendAll([FromBody] Submit[] submits)
-//        {
-//            var token = ConfigManager.Configuration["sybon:auth:sysuser:token"];
-//            var permissionsApi =
-//                new PermissionsApi(new Configuration(apiKey: new Dictionary<string, string>() {{"api_key", token}}));
-//            var limitExceeded = !permissionsApi.TryIncreaseRequestsCountBy(UserId, submits.Length);
-//            if (limitExceeded == null || limitExceeded.Value) return new HttpStatusCodeResult(RequestsLimitExceededStatusCode);
-//            bool authorized = submits.All(x =>
-//            {
-//                var permission = permissionsApi.GetToProblem(UserId, x.ProblemId);
-//                return permission.Contains("Read");
-//            });
-//            if (!authorized)
-//                return new HttpStatusCodeResult((int)HttpStatusCode.Unauthorized);
-//            var submitIds = new long[submits.Length];
-//            for (int i = 0; i < submits.Length; ++i)
-//            {
-//                submitIds[i] = await ServiceUoW.SubmitService.Send(submits[i]);
-//            }
-//            return Ok(submitIds);
-//        }
-//
+        [HttpPost("sendall")]
+        [SwaggerOperation("SendAll")]
+        [SwaggerResponse((int)HttpStatusCode.OK, Type = typeof(ICollection<long>))]
+        [SwaggerOperationFilter(typeof(SwaggerApiKeySecurityFilter))]
+        [AuthorizeFilter]
+        public async Task<IActionResult> SendAll(
+            [FromServices] IPermissionsApi permissionsApi,
+            [FromServices] ISubmitService submitService,
+            [FromServices] IMapper mapper,
+            [FromBody] SubmitModel[] submitModels)
+        {
+            var limitExceeded = !permissionsApi.TryIncreaseRequestsCountBy(UserId, submitModels.Length);
+            if(limitExceeded == null || limitExceeded.Value) return new StatusCodeResult(RequestsLimitExceededStatusCode);
+
+            if (!submitModels.All(x => permissionsApi.GetToProblem(UserId, x.ProblemId).Contains("Read")))
+                return new StatusCodeResult((int)HttpStatusCode.Unauthorized);
+
+            var submits = mapper.Map<Submit[]>(submitModels);
+            var submitCreated = DateTime.UtcNow;
+            foreach (var submit in submits)
+            {
+                submit.Created = submitCreated;
+                submit.UserId = UserId;
+            }
+            var submitIds = new long[submits.Length];
+            for (var i = 0; i<submits.Length; ++i)
+            {
+                submitIds[i] = await submitService.SendAsync(submits[i]);
+            }
+            return Ok(submitIds);
+        }
+
 //        [HttpPost("rejudge")]
 //        [SwaggerOperation("Rejudge")]
 //        [SwaggerOperationFilter(typeof(SwaggerApiKeySecurityFilter))]
