@@ -72,7 +72,7 @@ namespace Sybon.Checking
                     .CreateDefaultBuilder(startupArguments)
                     .UseStartup<Startup>()
                     .UseNLog()
-                    .UseUrls("http://0.0.0.0:8194")
+                    .UseUrls("http://*:8194")
                     .Build();
                 _app.Start();
             }
