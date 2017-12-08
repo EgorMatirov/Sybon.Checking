@@ -20,7 +20,7 @@ namespace Sybon.Checking
         private const string ServiceDescription = "Sybon.Checking web api";
         public static void Main(string[] args)
         {   
-            var myService = new MyService();
+            var myService = new MyService(BuildWebHost);
 
             if (args.Contains(RegisterServiceFlag))
             {
@@ -55,11 +55,28 @@ namespace Sybon.Checking
                 myService.Stop();
             }
         }
+        
+        // It's a bit silly but it needs to belong here
+        // Otherwise EF migrations don't want to work.
+        public static IWebHost BuildWebHost(string[] args) =>
+            WebHost
+                .CreateDefaultBuilder(args)
+                .UseStartup<Startup>()
+                .UseNLog()
+                .UseUrls("http://0.0.0.0:8194")
+                .Build();
     }
 
     internal class MyService : IWin32Service
     {
         private IWebHost _app;
+        private readonly Func<string[], IWebHost> _buildWebHostFunc;
+
+        public MyService(Func<string[], IWebHost> buildWebHostFunc)
+        {
+            _buildWebHostFunc = buildWebHostFunc;
+        }
+
         public string ServiceName => "Sybon.Checking";
 
         public void Start(string[] startupArguments, ServiceStoppedCallback serviceStoppedCallback)
@@ -68,12 +85,7 @@ namespace Sybon.Checking
             try
             {
                 logger.Debug("init main");
-                _app = WebHost
-                    .CreateDefaultBuilder(startupArguments)
-                    .UseStartup<Startup>()
-                    .UseNLog()
-                    .UseUrls("http://*:8194")
-                    .Build();
+                _app = _buildWebHostFunc(startupArguments);
                 _app.Start();
             }
             catch (Exception e)
