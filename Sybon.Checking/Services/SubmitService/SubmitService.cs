@@ -94,8 +94,23 @@ namespace Sybon.Checking.Services.SubmitService
                 Solution = solution,
                 PretestsOnly = dbEntry.PretestsOnly
             };
-            _submitClient.Submit(solutionData);
+            _submitClient.Submit(solutionData, continueConditionChange: GetContinueConditionChange(dbEntry));
             return dbEntry.Id;
+        }
+
+        private static SubmitClient.ContinueConditionChange GetContinueConditionChange(Repositories.SubmitsRepository.Submit dbEntry)
+        {
+            switch (dbEntry.ContinueCondition)
+            {
+                case ContinueCondition.Default:
+                    return SubmitClient.ContinueConditionChange.DoNotChange;
+                case ContinueCondition.Always:
+                    return SubmitClient.ContinueConditionChange.Always;
+                case ContinueCondition.WhileOk:
+                    return SubmitClient.ContinueConditionChange.WhileOk;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         public async Task<Submit> GetAsync(long id)

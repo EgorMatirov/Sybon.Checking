@@ -20,5 +20,6 @@ namespace Sybon.Checking.Repositories.SubmitsRepository
         public DateTime Created { get; set; }
         public long? UserId { get; set; }
         public bool PretestsOnly { get; set; }
+        public ContinueCondition ContinueCondition { get; set; }
     }
 }

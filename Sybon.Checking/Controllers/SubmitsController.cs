@@ -127,6 +127,7 @@ namespace Sybon.Checking.Controllers
             public SolutionFileType SolutionFileType { get; set; }
             public long ProblemId { get; set; }
             public bool PretestsOnly { get; set; }
+            public ContinueCondition ContinueCondition { get; set; }
         }
         
         public long UserId { get; set; }

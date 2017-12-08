@@ -14,5 +14,6 @@ namespace Sybon.Checking.Services.SubmitService.Models
         public long? UserId { get; set; }
         public SubmitResult Result { get; set; }
         public bool PretestsOnly { get; set; }
+        public ContinueCondition ContinueCondition { get; set; }
     }
 }
