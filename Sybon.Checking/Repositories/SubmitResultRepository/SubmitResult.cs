@@ -12,6 +12,6 @@ namespace Sybon.Checking.Repositories.SubmitResultRepository
         public long? BuildResultId { get; set; }
         public BuildResult BuildResult { get; set; }
         public Submit Submit { get; set; }
-        public ICollection<TestGroupResult> TestResults { get; set; }
+        public ICollection<TestGroupResult> TestGroupResults { get; set; }
     }
 }

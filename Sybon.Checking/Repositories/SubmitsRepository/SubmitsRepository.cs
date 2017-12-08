@@ -18,7 +18,7 @@ namespace Sybon.Checking.Repositories.SubmitsRepository
                 .Include(x => x.Result)
                 .ThenInclude(x => x.BuildResult)
                 .Include(x => x.Result)
-                .ThenInclude(x => x.TestResults)
+                .ThenInclude(x => x.TestGroupResults)
                 .ThenInclude(x => x.TestResults)
                 .ThenInclude(x => x.ResourceUsage)
                 .Include(x => x.Solution)

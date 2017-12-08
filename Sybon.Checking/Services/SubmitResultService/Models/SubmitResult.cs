@@ -6,6 +6,6 @@ namespace Sybon.Checking.Services.SubmitResultService.Models
     {
         public long Id { get; set; }
         public BuildResult BuildResult { get; set; }
-        public ICollection<TestGroupResult> TestResults { get; set; }
+        public ICollection<TestGroupResult> TestGroupResults { get; set; }
     }
 }

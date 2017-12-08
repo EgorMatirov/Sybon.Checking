@@ -16,7 +16,7 @@ namespace Sybon.Checking.Repositories.SubmitResultRepository
         {
             return Context.SubmitResult
                 .Include(x => x.BuildResult)
-                .Include(x => x.TestResults)
+                .Include(x => x.TestGroupResults)
                 .FirstOrDefaultAsync(x => x.Id == key);
         }
     }

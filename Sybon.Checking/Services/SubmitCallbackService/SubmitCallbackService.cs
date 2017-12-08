@@ -74,7 +74,7 @@ namespace Sybon.Checking.Services.SubmitCallbackService
                         Status = (Repositories.SubmitResultRepository.BuildResult.BuildStatus)(int)result.Build.Status
                     };
     
-                    submitResult.TestResults = result.TestGroup?.Select(tgr => new Repositories.SubmitResultRepository.TestGroupResult
+                    submitResult.TestGroupResults = result.TestGroup?.Select(tgr => new Repositories.SubmitResultRepository.TestGroupResult
                     {
                         InternalId = tgr.Id,
                         Executed = tgr.Executed,
