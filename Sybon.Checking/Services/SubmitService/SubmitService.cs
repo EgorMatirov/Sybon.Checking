@@ -103,7 +103,7 @@ namespace Sybon.Checking.Services.SubmitService
             switch (dbEntry.ContinueCondition)
             {
                 case ContinueCondition.Default:
-                    return SubmitClient.ContinueConditionChange.DoNotChange;
+                    return SubmitClient.ContinueConditionChange.Default;
                 case ContinueCondition.Always:
                     return SubmitClient.ContinueConditionChange.Always;
                 case ContinueCondition.WhileOk:
