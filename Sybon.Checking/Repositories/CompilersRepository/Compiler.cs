@@ -13,6 +13,8 @@ namespace Sybon.Checking.Repositories.CompilersRepository
         public long ResourceLimitsId { get; set; }
         public ResourceLimits ResourceLimits { get; set; }
         public string Args { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
         public IList<string> ArgList => Args.Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
     }
 }

@@ -13,9 +13,10 @@ using System;
 namespace Sybon.Checking.Migrations
 {
     [DbContext(typeof(CheckingContext))]
-    partial class CheckingContextModelSnapshot : ModelSnapshot
+    [Migration("20171213111953_AddNameAndDescriptionToCompilersEntity")]
+    partial class AddNameAndDescriptionToCompilersEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
