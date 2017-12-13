@@ -7,10 +7,11 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Sybon.Auth.Client.Api;
+using Sybon.Checking.Repositories.SubmitResultRepository;
 using Sybon.Checking.Services.SubmitResultService;
-using Sybon.Checking.Services.SubmitResultService.Models;
 using Sybon.Checking.Services.SubmitService;
 using Sybon.Checking.Services.SubmitService.Models;
+using SubmitResult = Sybon.Checking.Services.SubmitResultService.Models.SubmitResult;
 
 namespace Sybon.Checking.Controllers
 {
@@ -117,6 +118,15 @@ namespace Sybon.Checking.Controllers
                 .Select(async x => await submitService.GetAsync(x))
                 .Select(x => x.Result.Result)
                 .ToArray();
+            foreach (var submitResult in result)
+            {
+                foreach (var testGroupResult in submitResult.TestGroupResults)
+                {
+                    testGroupResult.TestResults = testGroupResult.TestResults
+                            .Where(x => x.Status != TestResultStatus.SKIPPED)
+                            .ToArray();
+                }
+            }
             return Ok(result);
         }
         
