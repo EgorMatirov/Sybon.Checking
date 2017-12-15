@@ -21,6 +21,7 @@
     <PackageReference Include="FubarCoder.RestSharp.Portable.HttpClient" Version="4.0.7" />
     <PackageReference Include="DasMulli.Win32.ServiceUtils" Version="1.0.1" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="4.5.0-beta04" />
+    <PackageReference Include="Sybon.Common" Version="0.2.0" />
   </ItemGroup>
   <ItemGroup>
     <None Include="nlog.config" CopyToOutputDirectory="Always" />
@@ -36,9 +37,6 @@
     </Reference>
     <Reference Include="Sybon.Auth.Client, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\libs\Sybon.Auth.Client.dll</HintPath>
-    </Reference>
-    <Reference Include="Sybon.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\libs\Sybon.Common.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

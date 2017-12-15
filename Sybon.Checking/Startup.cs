@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Swashbuckle.AspNetCore.Swagger;
 using Sybon.Archive.Client.Api;
 using Sybon.Checking.Controllers;
 using Sybon.Checking.Repositories.CompilersRepository;
@@ -66,14 +65,8 @@ namespace Sybon.Checking
                 options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
                 options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
             });
-            
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new Info { Title = "Sybon.Checking", Version = "v1" });
-                c.DescribeAllEnumsAsStrings();
-                c.AddSecurityDefinition("api_key", new ApiKeyScheme {In = "query", Name = "api_key"});
-                c.OperationFilter<SwaggerApiKeySecurityFilter>();
-            });
+
+            services.AddSwagger("Sybon.Checking", "v1");
             
             services.AddDbContext<CheckingContext>(options =>
             {
