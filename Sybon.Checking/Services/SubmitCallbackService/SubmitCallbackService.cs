@@ -36,6 +36,8 @@ namespace Sybon.Checking.Services.SubmitCallbackService
         {
             // todo: process intermediate results from bacs
             Console.WriteLine(Encoding.UTF8.GetString(status.Data.ToByteArray()));
+            var result = IntermediateResult.Parser.ParseFrom(status.Data.ToByteArray());
+            Console.WriteLine(result.State.ToString());
         }
         
         private static void ErrorCallback(string id, string error)
@@ -48,6 +50,11 @@ namespace Sybon.Checking.Services.SubmitCallbackService
         {
             if (result.Status == Result.Types.Status.Ok && result.Data != null)
                 GetFinalResult(id, result.Data.ToByteArray());
+            else if(result.Status == Result.Types.Status.ExecutionError)
+            {
+                Console.WriteLine(result.Log.ToBase64());
+                var r = Bacs.Problem.SystemResult.Parser.ParseFrom(result.Data);
+            }
         }
 
         public void Dispose()
