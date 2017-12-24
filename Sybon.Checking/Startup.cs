@@ -56,6 +56,7 @@ namespace Sybon.Checking
         [UsedImplicitly]
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
             services.AddMvc().AddJsonOptions(options =>
             {
                 options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
@@ -91,6 +92,7 @@ namespace Sybon.Checking
         [UsedImplicitly]
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseCors(builder => builder.AllowAnyOrigin());
             app.UseSwagger();
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sybon.Checking V1"); });
             app.UseMvc();
