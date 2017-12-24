@@ -6,8 +6,11 @@ using Bacs.Process;
 using Bunsan.Broker;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using NLog;
+using NLog.Fluent;
 using Sybon.Checking.Repositories.SubmitResultRepository;
 using Sybon.Common;
+using BuildResult = Sybon.Checking.Repositories.SubmitResultRepository.BuildResult;
 using Result = Bunsan.Broker.Result;
 
 namespace Sybon.Checking.Services.SubmitCallbackService
@@ -48,12 +51,46 @@ namespace Sybon.Checking.Services.SubmitCallbackService
 
         private void ResultCallback(string id, Result result)
         {
-            if (result.Status == Result.Types.Status.Ok && result.Data != null)
-                GetFinalResult(id, result.Data.ToByteArray());
-            else if(result.Status == Result.Types.Status.ExecutionError)
+            switch (result.Status)
             {
-                Console.WriteLine(result.Log.ToBase64());
-                var r = Bacs.Problem.SystemResult.Parser.ParseFrom(result.Data);
+                case Result.Types.Status.Ok when result.Data != null:
+                    GetFinalResult(id, result.Data.ToByteArray());
+                    break;
+                case Result.Types.Status.ExecutionError:
+                    SetExecutionError(id);
+                    LogManager.GetCurrentClassLogger().Error($"Checking failed. Log is {result.Log.ToBase64()}");
+                    break;
+                default:
+                    LogManager.GetCurrentClassLogger().Error($"Checking failed. Status is {result.Status}. Log is {result.Log.ToBase64()}");
+                    break;
+            }
+        }
+
+        private void SetExecutionError(string id)
+        {
+            lock (lockObj)
+            {
+                using (var scope = _serviceScopeFactory.CreateScope())
+                {
+                    var repositoryUnitOfWork = scope.ServiceProvider.GetRequiredService<IRepositoryUnitOfWork>();
+
+                    var submitResult = repositoryUnitOfWork.GetRepository<ISubmitResultRepository>()
+                        .FindAsync(long.Parse(id))
+                        .Result;
+
+                    EnsureHasBuildResult(submitResult);
+                    submitResult.BuildResult.Status = BuildResult.BuildStatus.SERVER_ERROR;
+
+                    repositoryUnitOfWork.SaveChangesAsync().Wait();
+                }
+            }
+        }
+
+        private static void EnsureHasBuildResult(SubmitResult submitResult)
+        {
+            if (submitResult.BuildResult == null)
+            {
+                submitResult.BuildResult = new BuildResult();
             }
         }
 
@@ -75,14 +112,10 @@ namespace Sybon.Checking.Services.SubmitCallbackService
                 
                     var submitResult = repositoryUnitOfWork.GetRepository<ISubmitResultRepository>().FindAsync(submitResultId).Result;
 
-                    if (submitResult.BuildResult == null)
-                    {
-                        submitResult.BuildResult = new Repositories.SubmitResultRepository.BuildResult();
-                    }
+                    EnsureHasBuildResult(submitResult);
                     
                     submitResult.BuildResult.Output = result.Build.Output.ToByteArray();
-                    submitResult.BuildResult.Status =
-                        (Repositories.SubmitResultRepository.BuildResult.BuildStatus) (int) result.Build.Status;
+                    submitResult.BuildResult.Status = (BuildResult.BuildStatus) (int) result.Build.Status;
     
                     submitResult.TestGroupResults = result.TestGroup?.Select(tgr => new Repositories.SubmitResultRepository.TestGroupResult
                     {
