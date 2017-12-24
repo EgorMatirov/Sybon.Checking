@@ -74,12 +74,15 @@ namespace Sybon.Checking.Services.SubmitCallbackService
                     var repositoryUnitOfWork = scope.ServiceProvider.GetRequiredService<IRepositoryUnitOfWork>();
                 
                     var submitResult = repositoryUnitOfWork.GetRepository<ISubmitResultRepository>().FindAsync(submitResultId).Result;
-                
-                    submitResult.BuildResult = new Repositories.SubmitResultRepository.BuildResult
+
+                    if (submitResult.BuildResult == null)
                     {
-                        Output = result.Build.Output.ToByteArray(),
-                        Status = (Repositories.SubmitResultRepository.BuildResult.BuildStatus)(int)result.Build.Status
-                    };
+                        submitResult.BuildResult = new Repositories.SubmitResultRepository.BuildResult();
+                    }
+                    
+                    submitResult.BuildResult.Output = result.Build.Output.ToByteArray();
+                    submitResult.BuildResult.Status =
+                        (Repositories.SubmitResultRepository.BuildResult.BuildStatus) (int) result.Build.Status;
     
                     submitResult.TestGroupResults = result.TestGroup?.Select(tgr => new Repositories.SubmitResultRepository.TestGroupResult
                     {

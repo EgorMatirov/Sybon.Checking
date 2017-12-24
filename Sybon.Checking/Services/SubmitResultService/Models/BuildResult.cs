@@ -2,7 +2,12 @@
 {
     public class BuildResult
     {
-        public Bacs.Process.BuildResult.Types.Status Status { get; set; }
+        public enum BuildStatus {
+            OK = 0,
+            FAILED = 1,
+            PENDING = 1000
+        }
+        public BuildStatus Status { get; set; }
         public byte[] Output { get; set; }
     }
 }

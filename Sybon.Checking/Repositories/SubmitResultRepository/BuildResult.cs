@@ -8,6 +8,7 @@ namespace Sybon.Checking.Repositories.SubmitResultRepository
         public enum BuildStatus {
             OK = 0,
             FAILED = 1,
+            PENDING = 1000
         }
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }

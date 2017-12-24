@@ -13,6 +13,7 @@ using Sybon.Checking.Repositories.CompilersRepository;
 using Sybon.Checking.Repositories.SubmitResultRepository;
 using Sybon.Checking.Repositories.SubmitsRepository;
 using Sybon.Common;
+using BuildResult = Sybon.Checking.Repositories.SubmitResultRepository.BuildResult;
 using Submit = Sybon.Checking.Services.SubmitService.Models.Submit;
 using Task = System.Threading.Tasks.Task;
 
@@ -44,7 +45,10 @@ namespace Sybon.Checking.Services.SubmitService
              * Probably we need to use GUIDs as identifiers instead of ids so we are able to generate guid and use it as
              * identifier without saving data. Or just introduce a separated indetifier for submit result (guid) and save it somewhere.
             */
-            dbEntry.Result = new SubmitResult();
+            dbEntry.Result = new SubmitResult
+            {
+                BuildResult = new BuildResult {Status = BuildResult.BuildStatus.PENDING}
+            };
             await _repositoryUnitOfWork.GetRepository<ISubmitsRepository>().AddAsync(dbEntry);
             await _repositoryUnitOfWork.SaveChangesAsync();
             return await SendAsync(dbEntry);
