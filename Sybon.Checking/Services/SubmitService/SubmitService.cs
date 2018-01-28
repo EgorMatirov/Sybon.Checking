@@ -117,16 +117,16 @@ namespace Sybon.Checking.Services.SubmitService
             }
         }
 
-        public async Task<Submit> GetAsync(long id)
-        {
-            var dbEntry = await _repositoryUnitOfWork.GetRepository<ISubmitsRepository>().FindAsync(id);
-            return _mapper.Map<Submit>(dbEntry);
-        }
-
         public async Task RejudgeAsync(long id)
         {
             var dbEntry = await _repositoryUnitOfWork.GetRepository<ISubmitsRepository>().FindAsync(id);
             await SendAsync(dbEntry);
+        }
+
+        public async Task<Submit[]> GetAllAsync(long[] ids, bool fetchFields = true)
+        {
+            var dbEntries = await _repositoryUnitOfWork.GetRepository<ISubmitsRepository>().GetAllAsync(ids, fetchFields);
+            return _mapper.Map<Submit[]>(dbEntries);
         }
 
         private static Archiver GetArchiver(Solution.SolutionFileType solutionFileType)

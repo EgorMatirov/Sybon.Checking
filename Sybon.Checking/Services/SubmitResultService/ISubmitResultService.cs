@@ -5,6 +5,6 @@ namespace Sybon.Checking.Services.SubmitResultService
 {
     public interface ISubmitResultService
     {
-        Task<SubmitResult> GetAsync(long id);
+        Task<SubmitResult[]> GetAllBySubmitIdsAsync(long[] submitIds);
     }
 }

@@ -88,8 +88,10 @@ namespace Sybon.Checking.Controllers
         {
             var limitExceeded = !permissionsApi.TryIncreaseRequestsCountBy(UserId, ids.Length);
             if(limitExceeded == null || limitExceeded.Value) return new StatusCodeResult(RequestsLimitExceededStatusCode);
+
+            var submits = await submitService.GetAllAsync(ids);
             
-            var submits = await Task.WhenAll(ids.Select(submitService.GetAsync));
+            // TODO: Use GetToProblems
             if (!submits.All(submit => permissionsApi.GetToProblem(UserId, submit.ProblemId).Contains("Read")))
                 return new StatusCodeResult((int)HttpStatusCode.Unauthorized);
             
@@ -108,17 +110,17 @@ namespace Sybon.Checking.Controllers
         public async Task<IActionResult> GetSubmitResults(
             [FromServices] IPermissionsApi permissionsApi,
             [FromServices] ISubmitService submitService,
+            [FromServices] ISubmitResultService submiResultService,
             [FromQuery] string ids)
         {
             var idList = ids.Split(",").Select(long.Parse).ToArray();
-            var submits = await Task.WhenAll(idList.Select(submitService.GetAsync));
+            var submits = await submitService.GetAllAsync(idList);
+            
+            // TODO: Use GetToProblems
             if (!submits.All(submit => permissionsApi.GetToProblem(UserId, submit.ProblemId).Contains("Read")))
                 return new StatusCodeResult((int)HttpStatusCode.Unauthorized);
             
-            var result = idList
-                .Select(async x => await submitService.GetAsync(x))
-                .Select(x => x.Result.Result)
-                .ToArray();
+            var result = await submiResultService.GetAllBySubmitIdsAsync(idList);
             foreach (var submitResult in result)
             {
                 foreach (var testGroupResult in submitResult.TestGroupResults)

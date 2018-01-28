@@ -17,10 +17,11 @@ namespace Sybon.Checking.Services.SubmitResultService
             _mapper = mapper;
         }
 
-        public async Task<SubmitResult> GetAsync(long id)
+        public async Task<SubmitResult[]> GetAllBySubmitIdsAsync(long[] submitIds)
         {
-            var dbEntry = await _repositoryUnitOfWork.GetRepository<ISubmitResultRepository>().FindAsync(id);
-            return _mapper.Map<SubmitResult>(dbEntry);
+            var dbEntry = await _repositoryUnitOfWork.GetRepository<ISubmitResultRepository>()
+                .GetAllBySubmitIdsAsync(submitIds);
+            return _mapper.Map<SubmitResult[]>(dbEntry);
         }
     }
 }
