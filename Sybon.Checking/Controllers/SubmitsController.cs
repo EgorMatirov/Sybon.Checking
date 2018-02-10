@@ -59,7 +59,8 @@ namespace Sybon.Checking.Controllers
             var limitExceeded = !permissionsApi.TryIncreaseRequestsCountBy(UserId, submitModels.Length);
             if(limitExceeded == null || limitExceeded.Value) return new StatusCodeResult(RequestsLimitExceededStatusCode);
 
-            if (!submitModels.All(x => permissionsApi.GetToProblem(UserId, x.ProblemId).Contains("Read")))
+            var permissions = await permissionsApi.GetToProblemsAsync(UserId, string.Join(",", submitModels.Select(x => x.ProblemId)));
+            if (!permissions.All(permission => permission.Contains("Read")))
                 return new StatusCodeResult((int)HttpStatusCode.Unauthorized);
 
             var submits = mapper.Map<Submit[]>(submitModels);
