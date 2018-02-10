@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using App.Metrics;
+using App.Metrics.Extensions.Configuration;
 using Bunsan.Broker;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +28,8 @@ namespace Sybon.Checking
 {
     public class Startup
     {
+        private const string ServiceName = "Sybon.Checking";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -57,13 +63,41 @@ namespace Sybon.Checking
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
-            services.AddMvc().AddJsonOptions(options =>
+
+            var metricsBuilder = AppMetrics.CreateDefaultBuilder()
+                .Configuration.ReadFrom(Configuration)
+                .Configuration.Configure(
+                    options =>
+                    {
+                        options.AddAppTag(ServiceName);
+                        options.AddEnvTag("development");
+                    });
+            
+            if (SecurityConfiguration.InfluxDb.Enabled)
+            {
+                metricsBuilder = metricsBuilder
+                    .Report.ToInfluxDb(options =>
+                    {
+                        options.InfluxDb.Password = SecurityConfiguration.InfluxDb.Password;
+                        options.InfluxDb.UserName = SecurityConfiguration.InfluxDb.UserName;
+                        options.InfluxDb.BaseUri = new Uri(SecurityConfiguration.InfluxDb.Url);
+                        options.InfluxDb.Database = SecurityConfiguration.InfluxDb.Database;
+                        options.FlushInterval = TimeSpan.FromSeconds(1);
+                    });
+            }
+
+            services.AddMetrics(metricsBuilder.Build());
+            services.AddMetricsReportScheduler();
+            services.AddMetricsTrackingMiddleware();
+            services.AddMetricsEndpoints();
+            
+            services.AddMvc(options => options.AddMetricsResourceFilter()).AddJsonOptions(options =>
             {
                 options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
                 options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
             });
 
-            services.AddSwagger("Sybon.Checking", "v1");
+            services.AddSwagger(ServiceName, "v1");
 
             services.AddDbContext<CheckingContext>(options =>
             {
@@ -93,6 +127,8 @@ namespace Sybon.Checking
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseCors(builder => builder.AllowAnyOrigin());
+            app.UseMetricsAllMiddleware();
+            app.UseMetricsAllEndpoints();
             app.UseSwagger();
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sybon.Checking V1"); });
             app.UseMvc();
@@ -103,7 +139,7 @@ namespace Sybon.Checking
                     .Listen(GetBunsanConnectionParameters(SecurityConfiguration.BunsanBroker));
         }
 
-        private static ConnectionParameters GetBunsanConnectionParameters(BunsanBrokerConfiguration config)
+        private static ConnectionParameters GetBunsanConnectionParameters(CheckingSecurityConfiguration.BunsanBrokerConfiguration config)
         {
             return new ConnectionParameters
             {

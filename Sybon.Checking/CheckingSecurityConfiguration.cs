@@ -57,6 +57,42 @@ namespace Sybon.Checking
             
             public string Url => Configuration.GetValue<string>("Url");
         }
+
+        public class InfluxDbConfiguration
+        {
+            public InfluxDbConfiguration(IConfiguration configuration)
+            {
+                Configuration = configuration;
+            }
+        
+            private IConfiguration Configuration { get; }
+            
+            public bool Enabled => Configuration.GetValue<bool>("Enabled");
+            public string Url => Configuration.GetValue<string>("Url");
+            public string Password => Configuration.GetValue<string>("Password");
+            public string UserName => Configuration.GetValue<string>("UserName");
+            public string Database => Configuration.GetValue<string>("Database");
+        }
+
+        public class BunsanBrokerConfiguration
+        {
+            public BunsanBrokerConfiguration(IConfiguration configuration)
+            {
+                Configuration = configuration;
+            }
+
+            private IConfiguration Configuration { get; }
+
+            public bool Enabled => Configuration.GetValue<bool>("Enabled");
+            public string WorkerName => Configuration.GetValue<string>("WorkerName");
+            public string WorkerResourceName => Configuration.GetValue<string>("WorkerResourceName");
+            public string Host => Configuration.GetValue<string>("Host");
+            public int Port => Configuration.GetValue<int>("Port");
+            public string VirtualHost => Configuration.GetValue<string>("VirtualHost");
+            public string Identifier => Configuration.GetValue<string>("Identifier");
+            public string Username => Configuration.GetValue<string>("Username");
+            public string Password => Configuration.GetValue<string>("Password");
+        }
         
         public CheckingSecurityConfiguration(IConfiguration configuration)
         {
@@ -71,25 +107,6 @@ namespace Sybon.Checking
         public SybonArchiveConfiguration SybonArchive => new SybonArchiveConfiguration(Configuration.GetSection("SybonArchive"));
         public string ApiKey => Configuration.GetValue<string>("ApiKey");
         public BunsanBrokerConfiguration BunsanBroker => new BunsanBrokerConfiguration(Configuration.GetSection("BunsanBroker"));
-    }
-
-    public class BunsanBrokerConfiguration
-    {
-        public BunsanBrokerConfiguration(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
-
-        private IConfiguration Configuration { get; }
-
-        public bool Enabled => Configuration.GetValue<bool>("Enabled");
-        public string WorkerName => Configuration.GetValue<string>("WorkerName");
-        public string WorkerResourceName => Configuration.GetValue<string>("WorkerResourceName");
-        public string Host => Configuration.GetValue<string>("Host");
-        public int Port => Configuration.GetValue<int>("Port");
-        public string VirtualHost => Configuration.GetValue<string>("VirtualHost");
-        public string Identifier => Configuration.GetValue<string>("Identifier");
-        public string Username => Configuration.GetValue<string>("Username");
-        public string Password => Configuration.GetValue<string>("Password");
+        public InfluxDbConfiguration InfluxDb => new InfluxDbConfiguration(Configuration.GetSection("InfluxDb"));
     }
 }

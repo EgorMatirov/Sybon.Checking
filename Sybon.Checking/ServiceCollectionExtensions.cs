@@ -26,7 +26,7 @@ namespace Sybon.Checking
         }
 
         public static IServiceCollection AddSubmitClient(this IServiceCollection services,
-            BunsanBrokerConfiguration config)
+            CheckingSecurityConfiguration.BunsanBrokerConfiguration config)
         {
             return services.AddSingleton<SubmitClient, SubmitClient>(provider =>
                 new SubmitClient(new Configuration
@@ -70,7 +70,7 @@ namespace Sybon.Checking
             return services.AddSingleton<IMapper, IMapper>(s => Mapper.Instance);
         }
 
-        private static ConnectionParameters GetBunsanConnectionParameters(BunsanBrokerConfiguration config)
+        private static ConnectionParameters GetBunsanConnectionParameters(CheckingSecurityConfiguration.BunsanBrokerConfiguration config)
         {
             return new ConnectionParameters
             {
