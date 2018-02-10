@@ -91,8 +91,8 @@ namespace Sybon.Checking.Controllers
 
             var submits = await submitService.GetAllAsync(ids);
             
-            // TODO: Use GetToProblems
-            if (!submits.All(submit => permissionsApi.GetToProblem(UserId, submit.ProblemId).Contains("Read")))
+            var permissions = await permissionsApi.GetToProblemsAsync(UserId, string.Join(",", submits.Select(x => x.ProblemId)));
+            if (!permissions.All(permission => permission.Contains("Read")))
                 return new StatusCodeResult((int)HttpStatusCode.Unauthorized);
             
             foreach (var id in ids)
