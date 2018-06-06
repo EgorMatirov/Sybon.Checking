@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using Sybon.Checking.Repositories.SubmitResultRepository;
 using Sybon.Common;
@@ -21,6 +22,16 @@ namespace Sybon.Checking.Services.SubmitResultService
         {
             var dbEntry = await _repositoryUnitOfWork.GetRepository<ISubmitResultRepository>()
                 .GetAllBySubmitIdsAsync(submitIds);
+            foreach (var submitResult in dbEntry)
+            {
+                foreach (var testGroupResult in submitResult.TestGroupResults)
+                {
+                    testGroupResult.TestResults = testGroupResult.TestResults.OrderBy(x => x.OrderNumber).ToList();
+                }
+
+                submitResult.TestGroupResults = submitResult.TestGroupResults.OrderBy(x => x.OrderNumber).ToList();
+            }
+
             return _mapper.Map<SubmitResult[]>(dbEntry);
         }
     }
