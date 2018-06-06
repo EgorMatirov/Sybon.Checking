@@ -8,10 +8,12 @@ namespace Sybon.Checking.Repositories.SubmitResultRepository
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
+
         public string InternalId { get; set; }
         public long SubmitResultId { get; set; }
         public SubmitResult SubmitResult { get; set; }
         public bool Executed { get; set; }
         public ICollection<TestResult> TestResults { get; set; }
+        public long OrderNumber { get; set; }
     }
 }

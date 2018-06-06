@@ -117,11 +117,12 @@ namespace Sybon.Checking.Services.SubmitCallbackService
                     submitResult.BuildResult.Output = result.Build.Output.ToByteArray();
                     submitResult.BuildResult.Status = (BuildResult.BuildStatus) (int) result.Build.Status;
     
-                    submitResult.TestGroupResults = result.TestGroup?.Select(tgr => new Repositories.SubmitResultRepository.TestGroupResult
+                    submitResult.TestGroupResults = result.TestGroup?.Select((tgr, i) => new Repositories.SubmitResultRepository.TestGroupResult
                     {
                         InternalId = tgr.Id,
                         Executed = tgr.Executed,
-                        TestResults = tgr.Test?.Select(tr => new Repositories.SubmitResultRepository.TestResult
+                        OrderNumber = i,
+                        TestResults = tgr.Test?.Select((tr, j) => new Repositories.SubmitResultRepository.TestResult
                         {
                             Status = GetStatus(tr),
                             JudgeMessage = tr.Judge?.Message,
@@ -132,7 +133,8 @@ namespace Sybon.Checking.Services.SubmitCallbackService
                             {
                                 TimeUsageMillis = (long) tr.Execution.ResourceUsage.TimeUsageMillis,
                                 MemoryUsageBytes = (long) tr.Execution.ResourceUsage.MemoryUsageBytes
-                            }
+                            },
+                            OrderNumber = j
                         }).ToList()
                     }).ToList();
     

@@ -7,6 +7,7 @@ namespace Sybon.Checking.Repositories.SubmitResultRepository
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
+
         public long TestGroupResultId { get; set; }
         public TestGroupResult TestGroupResult { get; set; }
         public TestResultStatus Status { get; set; }
@@ -16,5 +17,6 @@ namespace Sybon.Checking.Repositories.SubmitResultRepository
         public string Input { get; set; }
         public string ActualResult { get; set; }
         public string ExpectedResult { get; set; }
+        public long OrderNumber { get; set; }
     }
 }
