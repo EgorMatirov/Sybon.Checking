@@ -20,20 +20,6 @@ namespace Sybon.Checking
             public string ClientCertificatePath => Configuration.GetValue<string>("ClientCertificatePath");
         }
         
-        public class BacsStatementConfiguration
-        {
-            public BacsStatementConfiguration(IConfiguration configuration)
-            {
-                Configuration = configuration;
-            }
-
-            private IConfiguration Configuration { get; }
-            
-            public string Url => Configuration.GetValue<string>("Url");
-            public string Refferer => Configuration.GetValue<string>("Refferer");
-            public string Key => Configuration.GetValue<string>("Key");
-        }
-        
         public class SybonAuthConfiguration
         {
             public SybonAuthConfiguration(IConfiguration configuration)
@@ -102,7 +88,6 @@ namespace Sybon.Checking
         private IConfiguration Configuration { get; }
 
         public BacsArchiveConfiguration BacsArchive => new BacsArchiveConfiguration(Configuration.GetSection("BacsArchive"));
-        public BacsStatementConfiguration BacsStatement => new BacsStatementConfiguration(Configuration.GetSection("BacsStatement"));
         public SybonAuthConfiguration SybonAuth => new SybonAuthConfiguration(Configuration.GetSection("SybonAuth"));
         public SybonArchiveConfiguration SybonArchive => new SybonArchiveConfiguration(Configuration.GetSection("SybonArchive"));
         public string ApiKey => Configuration.GetValue<string>("ApiKey");

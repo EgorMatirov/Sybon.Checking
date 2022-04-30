@@ -137,6 +137,12 @@ namespace Sybon.Checking
                 app.ApplicationServices
                     .GetService<ISubmitCallbackService>()
                     .Listen(GetBunsanConnectionParameters(SecurityConfiguration.BunsanBroker));
+
+            using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetService<CheckingContext>();
+                context.Database.Migrate();
+            }
         }
 
         private static ConnectionParameters GetBunsanConnectionParameters(CheckingSecurityConfiguration.BunsanBrokerConfiguration config)
